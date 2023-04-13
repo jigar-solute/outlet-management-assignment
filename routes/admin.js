@@ -5,9 +5,10 @@ const adminController = require('../controller/admin.js');
 
 const router = express.Router();
 
+// router.get('/outlets', isAuth, adminController.getOutlets);  //isAuth later
 
-router.get('/outlets', isAuth, adminController.getOutlets);
+router.get('/outlets',  adminController.getOutlets);
 
-router.get('/products', isAuth)
+router.get('/products')
 
 module.exports = router;
