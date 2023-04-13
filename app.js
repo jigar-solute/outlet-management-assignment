@@ -13,6 +13,14 @@ const app = express();
 app.use(bodyParser.json()); // application/json           //to parse json data from incoming requests
 
 
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');            // It will not send  response, but only set the Header
+    res.setHeader('Access-Control-Allow-Methods', ' GET, POST, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+})
+
+
 app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
 

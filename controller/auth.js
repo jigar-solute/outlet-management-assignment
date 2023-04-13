@@ -51,13 +51,12 @@ exports.login = async (req, res, next) => {
          error.statusCode = 401;
          throw error;
        }  
-
     
         res.status(200).json({
          message: 'User Found',  
          userId: user._id.toString(),
          userRole: user.userRole
-        });
+    });
 
     } catch (err) {
         console.log(err)
