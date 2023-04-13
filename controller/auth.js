@@ -7,6 +7,7 @@ exports.signup = async (req, res, next) => {
 
     const email = req.body.email;
     const password = req.body.password;
+    const userRole = req.body.userRole;
 
 
     try {
@@ -14,7 +15,8 @@ exports.signup = async (req, res, next) => {
     
         const user = new User({
           email: email,
-          password: hashedPwd
+          password: hashedPwd,
+          userRole: userRole
         });
         const result = await user.save();
         res.status(201).json({
