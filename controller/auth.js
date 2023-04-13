@@ -1,4 +1,6 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 
 const User = require('../models/user.js');
 
@@ -19,6 +21,7 @@ exports.signup = async (req, res, next) => {
         });
 
         const result = await user.save();
+        
         
         res.status(201).json({
           message: 'User Created Successfully..!!',
@@ -51,8 +54,18 @@ exports.login = async (req, res, next) => {
          error.statusCode = 401;
          throw error;
        }  
+
+       const token = jwt.sign({
+        email: user.email,
+        userId: user._id.toString()
+      },
+      'somesupersecretsecret', {
+        expiresIn: '1h'
+      }
+    );
     
         res.status(200).json({
+         token: token,
          message: 'User Found',  
          userId: user._id.toString(),
          userRole: user.userRole
