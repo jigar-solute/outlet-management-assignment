@@ -1,0 +1,28 @@
+{
+    "products": [
+        {
+            "id": 1,
+            "name": "iPhone 13 Pro",
+            "description": "The iPhone 13 Pro features a stunning 6.1-inch Super Retina XDR display, A15 Bionic chip, and an advanced camera system with Night mode and ProRAW.",
+            "price": 999.00,
+            "imageUrl": "https://www.apple.com/newsroom/images/product/iphone/standard/iPhone_13_Pro-product(1)-2021_GEO_US.jpg.large.jpg",
+            "category": "smartphone"
+        },
+        {
+            "id": 2,
+            "name": "iPad Pro",
+            "description": "The iPad Pro features an M1 chip, stunning Liquid Retina XDR display, and 5G capabilities. It also supports the Apple Pencil and Magic Keyboard.",
+            "price": 799.00,
+            "imageUrl": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSr8W_DSIDdy_CRakfH_KbDzVVNGWuN1MjLLfPda2cyeVNeK1Y9B_7z6bwOtGNC1PrdaLtU9PeysxE&usqp=CAc",
+            "category": "tablet"
+        },
+        {
+            "id": 3,
+            "name": "MacBook Pro",
+            "description": "The MacBook Pro features the powerful M1 Pro or M1 Max chip, stunning Retina display, and up to 10 hours of battery life. It's the ultimate pro notebook.",
+            "price": 1499.00,
+            "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRybv5uW5_RVliDAQaMVLuq7pJ4IkhWXNiE_hI3-8o8lCyF3FcKWhlYGSIJ7akryF-yoIAoGAbl&usqp=CAc",
+            "category": "laptop"
+        }
+    ]
+}

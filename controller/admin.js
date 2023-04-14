@@ -1,22 +1,25 @@
 
 const User = require('../models/user.js');
 const Product = require('../models/product.js');
+const Outlet = require('../models/outlet.js');
+
 
 
 exports.getOutlets = async (req, res, next) => {
-    const { email, name } = req.query;
+    const { name } = req.query;
     const queryObject = {};
     
-    if(email){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
-        queryObject.email = email;         // previous query, and show whole data if the first qeuery itself is wrong 
-    }
 
-    // if(name){
-    //     queryObject.name = {$regex: name, $options: 'i'};  //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
-    // }                                                      //and all and also case insensitive (either small or capital both)
+    if(name){
+        queryObject.name = {$regex: name, $options: 'i'};  //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
+    }                                                      //and all and also case insensitive (either small or capital both)
+
+    // if(city){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
+    //     queryObject.city = city;         // previous query, and show whole data if the first qeuery itself is wrong 
+    // }
 
     try{
-        const outlets = await User.find(queryObject);   //replace with outlet model 
+        const outlets = await Outlet.find(queryObject);   //replace with outlet model 
         if(!outlets){
             res.json({ message: 'No Outlet found!'})
         }
@@ -25,8 +28,7 @@ exports.getOutlets = async (req, res, next) => {
             message: 'Outlets found!',
             Outlets: outlets.map(outlets => {
                 return {
-                    email: outlets.email,
-                    role: outlets.userRole
+                    name: outlets.name
                 }
             })
         })
@@ -73,7 +75,7 @@ exports.postAddProduct = async (req, res, next) => {
         category: category,
         quantity: quantity,
         description: description,
-        owner: '64390b047a10844f6e974bbb'
+        owners: '64390b047a10844f6e974bbb'
     });
 
     try {
@@ -86,7 +88,7 @@ exports.postAddProduct = async (req, res, next) => {
        res.status(201).json({
         message:"Product added Sucessfully!",
         product: product,
-        owner:{_id: '64390b047a10844f6e974bbb',name:user.email, role: user.userRole}
+        owners:{_id: '64390b047a10844f6e974bbb',name:user.email, role: user.userRole}
     });
     } catch (err) {
         console.log(err)
