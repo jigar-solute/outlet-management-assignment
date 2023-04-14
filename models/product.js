@@ -27,11 +27,15 @@ const productSchema = new Schema({
     type: String,
     required: true
   },
-  owner: {
+  owners: [{
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
-  }
+    required: true,
+    default: []
+  }]
+},
+{
+    timestamps: true
 });
 
 const Product = mongoose.model('Product', productSchema);

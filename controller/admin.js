@@ -73,20 +73,20 @@ exports.postAddProduct = async (req, res, next) => {
         category: category,
         quantity: quantity,
         description: description,
-        owner: user._id
+        owner: '64390b047a10844f6e974bbb'
     });
 
     try {
        await product.save();        
 
-       const user = await User.findById(user._id);
+       const user = await User.findById('64390b047a10844f6e974bbb');
        user.products.push(product);
        await user.save();
 
        res.status(201).json({
         message:"Product added Sucessfully!",
         product: product,
-        owner:{_id: user._id,name:user.email, role: user.userRole}
+        owner:{_id: '64390b047a10844f6e974bbb',name:user.email, role: user.userRole}
     });
     } catch (err) {
         console.log(err)
