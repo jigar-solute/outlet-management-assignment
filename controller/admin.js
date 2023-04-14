@@ -28,9 +28,12 @@ exports.getOutlets = async (req, res, next) => {
             message: 'Outlets found!',
             Outlets: outlets.map(outlets => {
                 return {
-                    name: outlets.name
+                    name: outlets.name,
+                    status: outlets.status,
+                    products: outlets.products
                 }
-            })
+            }),
+            products: outlets.products
         })
     } catch(err){
         console.log(err)
@@ -40,11 +43,11 @@ exports.getOutlets = async (req, res, next) => {
 
 exports.getOutlet = async (req, res, next) => {
     const outletId = req.params.outletId;
-
+     
     try {
-        const user = await User.findById(outletId);   //replace with outlet model 
+        const outlet = await Outlet.findById(outletId);   //replace with outlet model 
 
-    if(!user){
+    if(!outlet){
         const error = new Error('Could not find Outlet');
         error.statuCode=404;
         throw error;
@@ -52,13 +55,29 @@ exports.getOutlet = async (req, res, next) => {
 
     res.status(200).json({
         message: 'Outlet View:- ',
-        user: user
+        user: outlet
     })
     } catch (err) {
         console.log(err)
     }
     
 }
+
+exports.postChangeStatus = async (req, res, next) => {
+    const outletId = req.params.outletId;
+    const updatedStatus = req.query;
+
+    const outlet = await Outlet.findById(outletId)
+
+    outlet.status = updatedStatus.status;
+    await outlet.save();
+    res.json({
+        message: 'Outlet status updated!',
+        name: outlet.name,
+        status: outlet.status
+    })
+}
+
 
 exports.postAddProduct = async (req, res, next) => {
     const name = req.body.name;
