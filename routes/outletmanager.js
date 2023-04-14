@@ -4,6 +4,7 @@ const { signup,signin } = require("../controller/outletController")
 var bodyParser = require("body-parser");
 
 //signup one function
+//outletmodel
 outlateRouter.use(bodyParser.urlencoded({ extended: false }));
 outlateRouter.use(bodyParser.json());
 
