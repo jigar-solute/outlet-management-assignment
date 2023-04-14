@@ -6,7 +6,7 @@ const Outlet = require('../models/outlet.js');
 
 
 exports.getOutlets = async (req, res, next) => {
-    const { name } = req.query;
+    const { name, city, state, status, timing } = req.query;
     const queryObject = {};
     
 
@@ -14,9 +14,21 @@ exports.getOutlets = async (req, res, next) => {
         queryObject.name = {$regex: name, $options: 'i'};  //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
     }                                                      //and all and also case insensitive (either small or capital both)
 
-    // if(city){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
-    //     queryObject.city = city;         // previous query, and show whole data if the first qeuery itself is wrong 
-    // }
+    if(city){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
+        queryObject.city = {$regex: city, $options: 'i'};         // previous query, and show whole data if the first qeuery itself is wrong 
+    }
+
+    if(state){
+        queryObject.state = state;
+    }
+
+    if(status){
+        queryObject.status = status;
+    }
+
+    if(timing){
+        queryObject.timing = timing;
+    }
 
     try{
         const outlets = await Outlet.find(queryObject);   //replace with outlet model 
@@ -26,13 +38,7 @@ exports.getOutlets = async (req, res, next) => {
 
         res.json({
             message: 'Outlets found!',
-            Outlets: outlets.map(outlets => {
-                return {
-                    name: outlets.name,
-                    status: outlets.status,
-                    products: outlets.products
-                }
-            }),
+            Outlets: outlets,
             products: outlets.products
         })
     } catch(err){
