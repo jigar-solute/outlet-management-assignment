@@ -31,7 +31,7 @@ exports.getOutlets = async (req, res, next) => {
         if(!outlets){
             res.json({ message: 'No Outlet found!'})
         }
-
+       
         res.json({
             message: 'Outlets found!',
             Outlets: outlets.map(p => {
@@ -53,8 +53,8 @@ exports.getOutlet = async (req, res, next) => {
     const outletId = req.params.outletId;
      
     try {
-        const outlet = await Outlet.findById(outletId);   //replace with outlet model 
-
+        const outlet = await Outlet.findById(outletId)  //replace with outlet model 
+       
     if(!outlet){
         const error = new Error('Could not find Outlet');
         error.statuCode=404;
@@ -76,8 +76,9 @@ exports.postChangeStatus = async (req, res, next) => {
     const updatedStatus = req.query;
 
     const outlet = await Outlet.findById(outletId)
-
     outlet.status = updatedStatus.status;
+    console.log('AAAAA', outlet)
+
     await outlet.save();
     res.json({
         message: 'Outlet status updated!',

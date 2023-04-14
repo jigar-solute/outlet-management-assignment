@@ -11,7 +11,7 @@ router.get('/outlets',  adminController.getOutlets);
 
 router.get('/outlets/:outletId', adminController.getOutlet);
 
-router.post('/outlets/:outletId', adminController.postChangeStatus);
+router.patch('/outlets/:outletId', adminController.postChangeStatus);
 
 
 router.post('/add-product', adminController.postAddProduct);
