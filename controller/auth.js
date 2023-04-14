@@ -20,6 +20,15 @@ exports.signup = async (req, res, next) => {
           userRole: userRole
         });
 
+        const existingAdmin = await User.findOne({
+          userRole: 'admin'
+        })
+
+        if(existingAdmin && user.userRole === 'admin'){
+          const error = new Error('Admin exists already!')
+          throw error;
+        }
+
         const result = await user.save();
         
         

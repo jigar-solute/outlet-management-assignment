@@ -13,19 +13,15 @@ exports.getOutlets = async (req, res, next) => {
     if(name){
         queryObject.name = {$regex: name, $options: 'i'};  //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
     }                                                      //and all and also case insensitive (either small or capital both)
-
     if(city){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
         queryObject.city = {$regex: city, $options: 'i'};         // previous query, and show whole data if the first qeuery itself is wrong 
     }
-
     if(state){
         queryObject.state = state;
     }
-
     if(status){
         queryObject.status = status;
     }
-
     if(timing){
         queryObject.timing = timing;
     }
