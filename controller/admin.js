@@ -34,7 +34,13 @@ exports.getOutlets = async (req, res, next) => {
 
         res.json({
             message: 'Outlets found!',
-            Outlets: outlets,
+            Outlets: outlets.map(p => {
+                return {
+                    name: p.name,
+                    city: p.city,
+                    status: p.status
+                }
+            }),
             products: outlets.products
         })
     } catch(err){
