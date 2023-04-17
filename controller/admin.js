@@ -1,5 +1,7 @@
+const MongoClient = require('mongodb').MongoClient;
+require('dotenv').config(); //to load environment file
+const util = require('util');
 
-const User = require('../models/user.js');
 const Product = require('../models/product.js');
 const Outlet = require('../models/outlet.js');
 
@@ -53,7 +55,7 @@ exports.getOutlet = async (req, res, next) => {
     const outletId = req.params.outletId;
      
     try {
-        const outlet = await Outlet.findById(outletId)  //replace with outlet model 
+        const outlet = await Outlet.findById(outletId)  
        
     if(!outlet){
         const error = new Error('Could not find Outlet');
@@ -67,8 +69,7 @@ exports.getOutlet = async (req, res, next) => {
     })
     } catch (err) {
         console.log(err)
-    }
-    
+    }    
 }
 
 exports.postChangeStatus = async (req, res, next) => {
@@ -115,18 +116,35 @@ exports.postAddProduct = async (req, res, next) => {
 }
 
 
-// exports.getProduct = async (req, res, next) => {
-//     try{
-//     const productId = req.params.productId;
-//     const outlet = await Outlet.find()
-//     const product = await Product.findOne({
-//         _id: productId
-//     })
-//     const index = outlet.map(p => {
-//         return p.products.items.findIndex(item => item.productId.toString() === product._id.toString());
-//     })
-//     console.log(index)
-// } catch(err){
-//     console.log(err)
-// }
-// }
+
+exports.getCityProduct = async (req, res) => {
+  const { city } = req.params;
+  try {
+    const results = await Outlet.aggregate([
+      { $match: { city } },
+      { $unwind: '$products.items' },
+      { $group: { _id: '$products.items.status', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+    res.send(results);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+
+exports.getStateProduct = async (req, res) => {
+    const { state } = req.params;
+    try {
+      const results = await Outlet.aggregate([
+        { $match: { state } },
+        { $unwind: '$products.items' },
+        { $group: { _id: '$products.items.status', count: { $sum: 1 } } },
+        { $sort: { _id: 1 } }
+      ]);
+      res.send(results);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+  

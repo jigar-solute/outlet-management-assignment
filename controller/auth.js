@@ -19,15 +19,17 @@ exports.signup = async (req, res, next) => {
     const userRole = req.body.userRole;
 
     try {      
-         const existingUser = await User.find({
+         const existingUser = await User.findOne({
           email: email
          });
 
-         const existingAreaManager = await AreaManager.find({
+         const existingAreaManager = await AreaManager.findOne({
           email: email
          })
 
-         if(existingUser || existingAreaManager){
+       
+
+        if(existingUser || existingAreaManager){
           const error = new Error('User with this email already exists!');
           throw error;
          }

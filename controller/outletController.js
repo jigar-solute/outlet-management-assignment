@@ -6,31 +6,30 @@ const AreaManager = require('../models/areaManager');
 
 exports.addOutlet = async (req, res, next) => {
     
-  const areaManager = await AreaManager.findOne({
-    city: req.body.city
-  })
-  console.log('Area manager', areaManager._id);
-  const outlet = new Outlet({
-        name: req.body.name,
-        city: req.body.city,
-        state: req.body.state,
-        area: req.body.area,
-        status: req.body.status,
-        timing: req.body.timing,
-        manager: req.userId,
-        areaManager: areaManager._id
-    })
-
-    console.log('Outlet: ', outlet)
     try {
-        // const existingOutlet = await Outlet.find({
-        //     manager: req.userId
-        // });
+      const areaManager = await AreaManager.findOne({  //find area manager with same city to push outlet Ids
+        city: req.body.city
+      })
+        const existingOutlet = await Outlet.findOne({
+            manager: req.userId
+        });
 
-        // if (existingOutlet) {
-        //     const error = new Error('You can add outlet only once!');
-        //     throw error;
-        // }
+        if (existingOutlet) {
+            const error = new Error('You can add outlet only once!');
+            throw error;
+        }
+
+        const outlet = new Outlet({
+          name: req.body.name,
+          city: req.body.city,
+          state: req.body.state,
+          area: req.body.area,
+          status: req.body.status,
+          timing: req.body.timing,
+          manager: req.userId,
+          areaManager: areaManager._id
+      })
+
         await outlet.save()
         areaManager.outletIds.push(outlet._id);
         await areaManager.save();
@@ -42,43 +41,106 @@ exports.addOutlet = async (req, res, next) => {
 }
 
 
-exports.addOutletProducts = async (req, res, next) => {
-    try {
-        const product = await Product.findOne({
-            _id: req.params.productId
-        })
+// exports.addOutletProducts = async (req, res, next) => {
+//     try {
+//         const product = await Product.findOne({
+//             _id: req.params.productId
+//         })
 
-        const outlet = await Outlet.findOne({
-            manager: req.userId
-        }) 
-        if (outlet.products.items.length === 0) {
-            outlet.products.items.push({
-                productId: product._id,
-                quantity: +req.query.quantity
-            })
-        } else {
+//         const outlet = await Outlet.findOne({
+//             manager: req.userId
+//         }) 
+//         if (outlet.products.items.length === 0) {
+//           outlet.products.items.push(
+//             {
+//               productId: product._id,
+//               name: product.name,
+//               quantity: +req.query.quantity,
+//               imageUrl:product.imageUrl,
+//               price:product.price,
+//               category:product.category,
+//             })
+//         } else {
 
-            // Find the index of the product, if it already exists in the items array
-            const index = outlet.products.items.findIndex(item => item.productId.toString() === product._id.toString());
+            
+//             const index = outlet.products.items.findIndex(item => {     // Find the index of the product
+//               item.productId.toString() === product._id.toString()
+//             });  
           
-            if (index >= 0) {
-                // If the product exists, update the quantity
-                outlet.products.items[index].quantity += +req.query.quantity;
-            } else {
-                // If the product does not exist, add it to the items array
-                outlet.products.items.push({
-                    productId: product._id,
-                    quantity: +req.query.quantity
-                });
-            }
-        }
-        await outlet.save()
+//             if (index >= 0) {               
+//                 outlet.products.items[index].quantity += +req.query.quantity;   // If the product exists, update the quantity
+//             } else {
+              
+//               outlet.products.items.push(
+//                 {
+//                   productId: product._id,
+//                   name: product.name,
+//                   quantity: +req.query.quantity,
+//                   imageUrl:product.imageUrl,
+//                   price:product.price,
+//                   category:product.category,
+//                 })
+//             }
+//         }
+//         await outlet.save()
 
-        res.status(200).json(outlet)
-    } catch (err) {
-        console.log(err)
-    }
+//         res.status(200).json(outlet)
+//     } catch (err) {
+//         console.log(err)
+//     }
+// }
+
+exports.addOutletProducts = async (req, res, next) => {
+  try {
+      const product = await Product.findOne({
+          _id: req.params.productId
+      })
+
+      const outlet = await Outlet.findOne({
+          manager: req.userId
+      }) //outletid
+      if (outlet.products.items.length === 0) {
+          outlet.products.items.push({
+              productId: product._id,
+              name: product.name,
+              imageUrl: product.imageUrl,
+              category: product.category,
+              quantity: +req.query.quantity
+          })
+      } else {
+
+          // Find the index of the product, if it already exists in the items array
+          const index = outlet.products.items.findIndex(item => item.productId.toString() === product._id.toString());
+        
+          if (index >= 0) {
+              // If the product exists, update the quantity
+              outlet.products.items[index].quantity += +req.query.quantity;
+              outlet.products.items[index].status = 'available'
+          } else {
+               
+            
+          
+              // If the product does not exist, add it to the items array
+              outlet.products.items.push(
+                {
+                  productId: product._id,
+                  name: product.name,
+                  quantity: +req.query.quantity,
+                  imageUrl:product.imageUrl,
+                  price:product.price,
+                  category:product.category,
+                }      
+              );
+          }
+      }
+      await outlet.save()
+
+      res.status(200).json(outlet)
+  } catch (err) {
+      console.log(err)
+  }
 }
+
 
 exports.sellProduct = async (req, res, next) => {
 
@@ -90,22 +152,30 @@ exports.sellProduct = async (req, res, next) => {
         const productIndex = outlet.products.items.findIndex((item) => item.productId.toString() === req.params.productId.toString());
       
         if (productIndex === -1) {
-          const error = new Error(`Product is out of stock!`);
+          const error = new Error(`Product is not found`);
           throw error;
         }
+       
       
         const product = outlet.products.items[productIndex];
+        if(product.quantity === 0){
+          const error = new Error(`Product is out of stock`);
+          throw error;
+        }
       
         if (req.query.quantity > product.quantity) {
           const error = new Error(`You can only sell ${product.quantity} products`);
           throw error;
         }
-      
+        
+        
         product.quantity -= +req.query.quantity;
+        
       
-        if (product.quantity === 0) {
-            outlet.products.items = outlet.products.items.filter((item) => item.productId.toString() !== req.params.productId.toString());
+        if(product.quantity === 0){
+          product.status = 'out of stock'
         }
+      
       
         await outlet.save();
         res.status(200).json(outlet);
