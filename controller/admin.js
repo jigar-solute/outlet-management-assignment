@@ -9,9 +9,9 @@ exports.getOutlets = async (req, res, next) => {
     const { name, city, state, status, timing } = req.query;
     const queryObject = {};
     
-
     if(name){
-        queryObject.name = {$regex: name, $options: 'i'};  //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
+        queryObject.name = {$regex: name, $options: 'i'};
+        //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
     }                                                      //and all and also case insensitive (either small or capital both)
     if(city){                             //so that if any wrong query is written, then we don't show empty array, but data based on its 
         queryObject.city = {$regex: city, $options: 'i'};         // previous query, and show whole data if the first qeuery itself is wrong 
@@ -25,13 +25,13 @@ exports.getOutlets = async (req, res, next) => {
     if(timing){
         queryObject.timing = timing;
     }
-
+    
     try{
         const outlets = await Outlet.find(queryObject);   //replace with outlet model 
         if(!outlets){
-            res.json({ message: 'No Outlet found!'})
+            res.json({ message: 'No Outlet found!'})     
         }
-       
+        
         res.json({
             message: 'Outlets found!',
             Outlets: outlets.map(p => {
@@ -41,7 +41,7 @@ exports.getOutlets = async (req, res, next) => {
                     status: p.status
                 }
             }),
-            products: outlets.products
+            products: outlets.products          
         })
     } catch(err){
         console.log(err)
@@ -60,7 +60,7 @@ exports.getOutlet = async (req, res, next) => {
         error.statuCode=404;
         throw error;
     }
-
+     
     res.status(200).json({
         message: 'Outlet View:- ',
         user: outlet
@@ -77,7 +77,6 @@ exports.postChangeStatus = async (req, res, next) => {
 
     const outlet = await Outlet.findById(outletId)
     outlet.status = updatedStatus.status;
-    console.log('AAAAA', outlet)
 
     await outlet.save();
     res.json({
@@ -93,7 +92,6 @@ exports.postAddProduct = async (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const category = req.body.category;
-    const quantity = req.body.quantity;
     const description = req.body.description;
 
     const product = new Product({
@@ -101,26 +99,34 @@ exports.postAddProduct = async (req, res, next) => {
         imageUrl: imageUrl,
         price: price,
         category: category,
-        quantity: quantity,
-        description: description,
-        owners: '64390b047a10844f6e974bbb'
+        description: description
     });
 
     try {
-       await product.save();        
-
-       const user = await User.findById('64390b047a10844f6e974bbb');
-       user.products.push(product);
-       await user.save();
+       await product.save();   
 
        res.status(201).json({
         message:"Product added Sucessfully!",
-        product: product,
-        owners:{_id: '64390b047a10844f6e974bbb',name:user.email, role: user.userRole}
+        product: product
     });
     } catch (err) {
         console.log(err)
     }
-
-
 }
+
+
+// exports.getProduct = async (req, res, next) => {
+//     try{
+//     const productId = req.params.productId;
+//     const outlet = await Outlet.find()
+//     const product = await Product.findOne({
+//         _id: productId
+//     })
+//     const index = outlet.map(p => {
+//         return p.products.items.findIndex(item => item.productId.toString() === product._id.toString());
+//     })
+//     console.log(index)
+// } catch(err){
+//     console.log(err)
+// }
+// }

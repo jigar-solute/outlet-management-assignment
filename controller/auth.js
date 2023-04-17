@@ -1,41 +1,74 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const { validationResult } = require('express-validator');
 
 const User = require('../models/user.js');
+const AreaManager = require('../models/areaManager.js')
 
 
 exports.signup = async (req, res, next) => {
-
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed.');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
     const email = req.body.email;
     const password = req.body.password;
     const userRole = req.body.userRole;
 
-    try {
-      
-        const hashedPwd = await bcrypt.hash(password, 12);
-    
-        const user = new User({
-          email: email,
-          password: hashedPwd,
-          userRole: userRole
-        });
+    try {      
+         const existingUser = await User.find({
+          email: email
+         });
 
-        const existingAdmin = await User.findOne({
-          userRole: 'admin'
-        })
+         const existingAreaManager = await AreaManager.find({
+          email: email
+         })
 
-        if(existingAdmin && user.userRole === 'admin'){
-          const error = new Error('Admin exists already!')
+         if(existingUser || existingAreaManager){
+          const error = new Error('User with this email already exists!');
           throw error;
+         }
+
+        const hashedPwd = await bcrypt.hash(password, 12);    
+
+      
+        if(userRole === 'area-manager'){
+          const area = req.body.area;
+          const areaManager = new AreaManager({
+            email: email,
+            password: hashedPwd,
+            area: area
+          });
+
+          await areaManager.save();
         }
 
-        const result = await user.save();
-        
+        else{    //if not area manager (i.e., admin or outlet manager)
+          const user = new User({
+            email: email,
+            password: hashedPwd,
+            userRole: userRole
+          });
+  
+          const existingAdmin = await User.findOne({
+            userRole: 'admin'
+          })
+  
+          if(existingAdmin && user.userRole === 'admin'){
+            const error = new Error('Admin exists already!')
+            throw error;
+          }
+  
+          await user.save();
+          
+        }
+
         
         res.status(201).json({
-          message: 'User Created Successfully..!!',
-          userId: result._id
+          message: 'User Created Successfully..!!'
         });
       } catch (err){
         console.log(err)
@@ -59,6 +92,7 @@ exports.login = async (req, res, next) => {
           }
         
          const isEqual = await bcrypt.compare(password, user.password);
+        
         if (!isEqual) {
          const error = new Error('Wrong password!');
          error.statusCode = 401;
@@ -67,9 +101,10 @@ exports.login = async (req, res, next) => {
 
        const token = jwt.sign({
         email: user.email,
-        userId: user._id.toString()
+        userId: user._id.toString(),
+        userRole: user.userRole
       },
-      'somesupersecretsecret', {
+      process.env.JWT_SECRET_KEY, {
         expiresIn: '1h'
       }
     );

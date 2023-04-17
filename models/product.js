@@ -18,21 +18,10 @@ const productSchema = new Schema({
     type: String,
     required: true
   },
-  quantity: {
-    type: Number,
-    required: true,
-    default: 0
-  },
   description: {
     type: String,
     required: true
-  },
-  owners: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    default: []
-  }]
+  }
 },
 {
     timestamps: true
