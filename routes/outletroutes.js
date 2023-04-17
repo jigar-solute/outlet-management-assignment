@@ -1,14 +1,20 @@
 const express = require("express")
-const outlateroutes = express.Router()
-const {addoutlateStore,addtocart} = require("../controller/outletController")
-var bodyParser = require("body-parser");
+const router = express.Router();
+
+const outletController = require("../controller/outletController.js");
+const isAuth = require("../middleware/isAuth.js");
+const outletManagerAuth = require('../middleware/outletManagerAuth.js')
 
 
-//outletmodel routers
-outlateroutes.use(bodyParser.urlencoded({ extended: false }));
-outlateroutes.use(bodyParser.json());
+router.post('/add-outlet', isAuth, outletManagerAuth, outletController.addOutlet);
 
-outlateroutes.post("/addoutlet", addoutlateStore);
-outlateroutes.post("/addtocart",addtocart)
+router.post('/add-outlet-products/:productId', isAuth, outletManagerAuth, outletController.addOutletProducts);
 
-module.exports = outlateroutes
+router.post('/sell-product/:productId', isAuth, outletManagerAuth, outletController.sellProduct);
+
+router.get('/products', isAuth, outletManagerAuth, outletController.getProducts);
+
+router.get('/filter', isAuth, outletManagerAuth, outletController.filterProducts);
+
+
+module.exports = router;
