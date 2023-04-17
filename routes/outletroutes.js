@@ -12,7 +12,7 @@ router.post('/add-outlet-products/:productId', isAuth, outletManagerAuth, outlet
 
 router.post('/sell-product/:productId', isAuth, outletManagerAuth, outletController.sellProduct);
 
-router.get('/products', isAuth, outletManagerAuth, outletController.getProducts);
+router.get('/products', isAuth, outletManagerAuth, outletController.getProducts);//no needs
 
 router.get('/filter', isAuth, outletManagerAuth, outletController.filterProducts);
 

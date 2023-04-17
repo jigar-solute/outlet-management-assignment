@@ -192,48 +192,46 @@ exports.getProducts = async (req, res) => {
   };
   
   exports.filterProducts = async (req, res) => {
-    const {  name,maxrange,minrange,minquanity,maxquantity} = req.query;
+    const {  name,minPrice,maxPrice,minQuanity,maxQuantity} = req.query;
   const queryParmsObject = {};
 
-
+  
 
   if (name) {
-    queryParmsObject["products.items.name"] = { $regex: name, $options: 'i' };
-  }
+    queryParmsObject["products.items.price.name"] = { $regex: name, $options: 'i' };
+  }                  //key                      //value
 
-  if (maxrange) {
-    queryParmsObject["products.items.price"] = maxrange;
+  if (maxPrice) {
+    
+    queryParmsObject["products.items.price"] = { $lte: maxPrice };
   }
-  if (minrange) {
-    queryParmsObject["products.items.price"] = minrange;
+  if (minPrice) {
+    queryParmsObject["products.items.price"] = { $gte: minPrice };
   }
-  if(minquanity){
+  if(minQuanity){
 
-    queryParmsObject["products.items.quantity"] = minquanity; 
+    queryParmsObject["products.items.quantity"] = {$gte: minQuanity}; 
    }
-    if(maxquantity){
-    queryParmsObject["products.items.quantity"] = maxquantity;
+    if(maxQuantity){
+    queryParmsObject["products.items.quantity"] = {$lte: maxQuantity};
     }
 
   try {
-    const outlets = await Outlet.find(queryParmsObject, '-manager')
-      .populate('products.items.productId', 'name price');
+    const outlets = await Outlet.find({
+      manager: req.userId,
+      ...queryParmsObject,
+    })
+     .populate('products.items.productId', 'name price ');//outlet
 
     res.status(200).json({
       message: 'Outlets found',
       outlets: outlets.map((outlet) => ({
-        id: outlet._id,
-        name: outlet.name,
-        city: outlet.city,
-        state: outlet.state,
-        area: outlet.area,
-        status: outlet.status,
-        timing: outlet.timing,
         products: outlet.products.items.map((product) => ({
           id: product.productId._id,
           name: product.productId.name,
           price: product.price,
         })),
+        quantity: outlet.products.items.quantity
       })),
     });
   } catch (err) {
@@ -242,6 +240,32 @@ exports.getProducts = async (req, res) => {
   }
 
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 // exports.filterProducts = async (req, res) => {
 //   const { minprice, maxprice, minquantity,maxquantity ,name} = req.query;
 //   const queryParmsObject = {};
