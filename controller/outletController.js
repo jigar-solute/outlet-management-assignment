@@ -135,40 +135,6 @@ exports.sellProduct = async (req, res, next) => {
 }
 
 
-
-exports.getProducts = async (req, res) => {
-  try {
-    const outlet = await Outlet.findOne({
-      manager: req.userId
-    })
-    //.populate('products.items.productId', 'name price')
-
-    if (!outlet) {
-      return res.status(404).json({
-        message: 'Outlet not found'
-      });
-    }
-
-    if (!outlet.products || !outlet.products.items) {
-      return res.status(404).json({
-        message: 'No products found for this outlet'
-      });
-    }
-
-    const products = outlet.products.items.map(item => {
-      return item
-    });
-
-    res.json({
-      message: 'Products found',
-      products: products
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-
 exports.filterProducts = async (req, res) => {
   const {
     name,
@@ -177,53 +143,34 @@ exports.filterProducts = async (req, res) => {
     minQuantity,
     maxQuantity
   } = req.query;
-  const queryParamsObject = {};
-
-
-  if (name) {
-    queryParamsObject["products.items.price.name"] = { $regex: name, $options: 'i' };
-  }                   //key                           //value
-
-  if (minPrice) {
-    queryParamsObject['products.items.price'] = {
-      $gte: minPrice
-    };
-  }
-  if (maxPrice) {
-    queryParamsObject['products.items.price'] = {
-      $lte: maxPrice
-    };
-  }
-
-  if (minQuantity) {
-    queryParamsObject["products.items.quantity"] = {
-      $gte: minQuantity
-    };
-  }
-  if (maxQuantity) {
-    queryParamsObject["products.items.quantity"] = {
-      $lte: maxQuantity
-    };
-  }
 
   try {
-    const outlet = await Outlet.find({
-        manager: req.userId,
-        ...queryParamsObject,
+    const outlet = await Outlet.findOne({
+        manager: req.userId
       })
-      .populate('products.items.productId', 'name price'); //outlet
-    console.log(outlet)
+   
+     if(name){
+      res.status(200).json({
+        message: 'Outlet Found',
+        products: outlet.products.items.filter(product => {
+          return product.name.split(' ').join('') === name
+        }) 
+      })
+     }
+     else{
+      res.status(200).json({
+        message: 'Outlets found',
+        products: outlet.products.items.filter(product => {
+          if(Object.keys(req.query).length === 0){  //req.query = {}
+            return product;
+        }
+            return ((product.price <= maxPrice && product.price >= minPrice) || (product.quantity <= maxQuantity && product.quantity >= minQuantity) )
+          }),
+        
+      });
+     }
+    
 
-    res.status(200).json({
-      message: 'Outlets found',
-      outlets: outlet.map((outlet) => ({
-        products: outlet.products.items.map((product) => ({
-          id: product.productId._id,
-          name: product.productId.name,
-          price: product.price
-        })),
-      })),
-    });
   } catch (err) {
     console.log(err);
   }
