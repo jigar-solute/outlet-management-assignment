@@ -14,4 +14,7 @@ router.post('/sell-product/:productId', isAuth, outletManagerAuth, outletControl
 
 router.get('/products', isAuth, outletManagerAuth, outletController.getProducts);
 
+router.get('/filter', isAuth, outletManagerAuth, outletController.filterProducts);
+
+
 module.exports = router;
