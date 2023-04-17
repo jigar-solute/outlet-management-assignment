@@ -76,7 +76,8 @@ exports.postChangeStatus = async (req, res, next) => {
     const outletId = req.params.outletId;
     const updatedStatus = req.query;
 
-    const outlet = await Outlet.findById(outletId)
+    const outlet = await Outlet.findById(outletId);
+
     outlet.status = updatedStatus.status;
 
     await outlet.save();

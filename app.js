@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose  = require('mongoose');
 
 const homePageRoutes = require('./routes/homePage.js');
-const outletRoutes = require('./routes/outletroutes.js');
+const outletRoutes  = require('./routes/outletroutes.js');
 const adminRoutes = require('./routes/admin.js');
 const authRoutes = require('./routes/auth.js');
 
