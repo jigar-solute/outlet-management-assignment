@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
 const outletSchema = new Schema({
   name: {
     type: String,
@@ -14,7 +13,7 @@ const outletSchema = new Schema({
     type: String,
     required: true,
   },
-  address: {
+  area: {
     type: String,
     required: true,
   },
@@ -38,13 +37,34 @@ const outletSchema = new Schema({
         type: Number,
         required: true,
         default: 0
-      }
+      },
+      name: {
+        type: String,
+        default:""
+      },
+      imageUrl: {
+        type: String,
+        default:""
+      },
+      price:{
+        type: Number,
+        default:0
+      },
+      category: {
+        type: String,
+        default:""
+      },
     }]
   },
   manager: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
-  }
+  },
+    areaManager: {
+      type: Schema.Types.ObjectId,
+      ref: 'AreaManager',
+      required: true
+    }
 });
 module.exports = mongoose.model('Outlatestoremodel', outletSchema);
