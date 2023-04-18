@@ -51,17 +51,6 @@ exports.getOutlets = async (req, res, next) => {
             products: outlets.products
         })
 
-        // res.json({
-        //     message: 'Outlets found!',
-        //     Outlets: outlets.map(p => {
-        //         return {
-        //             name: p.name,
-        //             city: p.city,
-        //             status: p.status
-        //         }
-        //     }),
-        //     products: outlets.products
-        // })
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -155,83 +144,6 @@ exports.postAddProduct = async (req, res, next) => {
 
 
 
-
-
-// exports.getCityProduct = async (req, res) => {
-//     const {city, state} = req.query
-//     try{
-//     const result = await Promise.all([
-//         Outlet.aggregate([
-//           {
-//             $match: { city },
-//           },
-//           {
-//             $unwind: '$products.items',
-//           },
-//           {
-//             $group: {
-//               _id: '$products.items.status',
-//               product_count: {
-//                 $sum: 1,
-//               },
-//               total_quantity: {
-//                 $sum: '$products.items.quantity',
-//               },
-//             },
-//           },
-//           {
-//             $sort: {
-//               _id: 1,
-//             },
-//           },
-//         ]),
-//         Outlet.aggregate([
-//           {
-//             $match: { state },
-//           },
-//           {
-//             $unwind: '$products.items',
-//           },
-//           {
-//             $addFields: {
-//               filter: 'city',
-//             },
-//           },
-//           {
-//             $group: {
-//               _id: '$products.items.status',
-//               product_count: {
-//                 $sum: 1,
-//               },
-//               total_quantity: {
-//                 $sum: '$products.items.quantity',
-//               },
-//             },
-//           },
-//           {
-//             $sort: {
-//               _id: 1,
-//             },
-//           },
-//         ]),
-//       ]);
-
-//       console.log(result)
-    
-//         res.json({
-//             result
-//         });
-//     } catch (err) {
-//         if (!err.statusCode) {
-//             err.statusCode = 500;
-//         }
-//         // next(err);
-//         console.log(err)
-//     }
-// };
-
-
-
 exports.getCityProduct = async (req, res) => {
     const {city, state} = req.query
     try{
@@ -290,19 +202,59 @@ exports.getCityProduct = async (req, res) => {
           },
         ])     
 
-    
-        res.json({
-            city: city,
-            cityResult,  
-            
-            state: state,       
-            stateResult
-        });
+        const allOutletResult = await Outlet.aggregate([
+            {
+              $unwind: '$products.items',
+            },
+            {
+              $group: {
+                _id: '$products.items.status',
+                product_count: {
+                  $sum: 1,
+                },
+                total_quantity: {
+                  $sum: '$products.items.quantity',
+                },
+              },
+            },
+            {
+              $sort: {
+                _id: 1,
+              },
+            },
+          ])     
+  
+            if(cityResult.length === 0 && stateResult.length !== 0){
+                res.json({                
+                    state: state,       
+                    stateResult
+                });
+              }    
+              if(stateResult.length === 0 && cityResult.length !== 0){
+                res.json({                
+                    state: city,       
+                    cityResult
+                });
+              }
+           if(cityResult.length === 0 && stateResult.length === 0){
+               res.json({
+                allOutletResult
+               })
+          }
+          else{
+            res.json({
+                city: city,
+                cityResult,  
+                
+                state: state,       
+                stateResult
+            });
+          }            
+        
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        // next(err);
         console.log(err)
     }
 };
