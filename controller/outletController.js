@@ -5,7 +5,9 @@ const AreaManager = require('../models/areaManager');
 
 
 exports.addOutlet = async (req, res, next) => {
+  const {name,city,state,area,status,timings} = req.body;
   try {
+
     const areaManager = await AreaManager.findOne({ //find area manager with same city to push outlet Ids
       city: req.body.city
     })
@@ -22,14 +24,29 @@ exports.addOutlet = async (req, res, next) => {
       const error = new Error('You can add outlet only once!');
       throw error;
     }
+    
+    // let endtime=new Date(endTime);
+    // console.log(endtime);
+
+
+// const itemStartTime = new Date(`2023-04-18T${req.startTime}:00`).getTime()
+
+        if(timings.close<timings.open)
+        {
+          const error = new Error('Timings must be in 24 hour format');
+          throw error
+        }
 
     const outlet = new Outlet({
-      name: req.body.name,
-      city: req.body.city,
-      state: req.body.state,
-      area: req.body.area,
-      status: req.body.status,
-      timing: req.body.timing,
+      name: name,
+      city: city,
+      state: state,
+      area: area,
+      status:status,
+       timings:{
+       open:timings.open,
+       close:timings.close
+       },
       manager: req.userId,
       areaManager: areaManager._id
     })
@@ -99,12 +116,12 @@ exports.addOutletProducts = async (req, res, next) => {
 
 
 exports.sellProduct = async (req, res, next) => {
-
+  
   try {
     const outlet = await Outlet.findOne({
       manager: req.userId
     });
-
+   
     const productIndex = outlet.products.items.findIndex((item) => item.productId.toString() === req.params.productId.toString());
 
     if (productIndex === -1) {
@@ -126,7 +143,7 @@ exports.sellProduct = async (req, res, next) => {
 
 
     product.quantity -= +req.query.quantity;
-
+    
 
     if (product.quantity === 0) {
       product.status = 'out of stock';
@@ -145,13 +162,14 @@ exports.sellProduct = async (req, res, next) => {
 }
 
 
-exports.filterProducts = async (req, res) => {
+exports.filterProducts = async (req, res,next) => {
   const {
     name,
     minPrice,
     maxPrice,
     minQuantity,
-    maxQuantity
+    maxQuantity,
+    outletIds
   } = req.query;
 
   try {
@@ -167,6 +185,17 @@ exports.filterProducts = async (req, res) => {
         }) 
       })
      }
+     else if(outletIds)
+     {
+      let outletmodel=await Outlet.findOne({_id:outletIds})
+      res.status(200).json({
+        message: 'Outlet Found',
+        products: outletmodel.products.items.map(product => {
+          return ({name: product.name, quantity: product.quantity, price: product.price, imageUrl: product.imageUrl, category: product.category})
+        }) 
+      })
+     
+    }
      else{
       res.status(200).json({
         message: 'Outlets found',
