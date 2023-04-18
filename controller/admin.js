@@ -11,7 +11,7 @@ exports.getOutlets = async (req, res, next) => {
         city,
         state,
         status,
-        timing
+        timings
     } = req.query;
     const queryObject = {};
 
@@ -34,8 +34,8 @@ exports.getOutlets = async (req, res, next) => {
     if (status) {
         queryObject.status = status;
     }
-    if (timing) {
-        queryObject.timing = timing;
+    if (timings) {
+        queryObject.timings = timings;
     }
     try {
         const outlets = await Outlet.find(queryObject, {"name": 1, "state": 1, "city": 1, "_id": 0});

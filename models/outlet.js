@@ -22,9 +22,15 @@ const outletSchema = new Schema({
     enum: ['active', 'inactive'],
     default: 'active',
   },
-  timing: {
-    type: String,
-    required: true,
+  timings:{
+    open:{
+      type: Number,
+      required: true,
+    },
+    close:{
+      type: Number,
+      required: true,
+    }
   },
   products: {
     items: [{

@@ -5,6 +5,15 @@ const AreaManager = require('../models/areaManager');
 
 
 exports.addOutlet = async (req, res, next) => {
+  const {
+    name,
+    city,
+    state,
+    area,
+    status,
+    timings
+  } = req.body;
+
   try {
     const areaManager = await AreaManager.findOne({ //find area manager with same city to push outlet Ids
       city: req.body.city
@@ -23,13 +32,23 @@ exports.addOutlet = async (req, res, next) => {
       throw error;
     }
 
+    if(timings.close<timings.open)
+    {
+      const error = new Error('Timings must be in 24 hour format');
+      throw error
+    }
+
+
     const outlet = new Outlet({
-      name: req.body.name,
-      city: req.body.city,
-      state: req.body.state,
-      area: req.body.area,
-      status: req.body.status,
-      timing: req.body.timing,
+      name: name,
+      city: city,
+      state: state,
+      area: area,
+      status: status,
+      timings: {
+        open: timings.open,
+        close: timings.close
+      },
       manager: req.userId,
       areaManager: areaManager._id
     })
@@ -50,7 +69,7 @@ exports.addOutlet = async (req, res, next) => {
 
 exports.addOutletProducts = async (req, res, next) => {
   try {
-    console.log('REQ user ID: ',req._id)
+    console.log('REQ user ID: ', req._id)
     const product = await Product.findOne({
       _id: req.params.productId
     })
@@ -58,11 +77,11 @@ exports.addOutletProducts = async (req, res, next) => {
     const outlet = await Outlet.findOne({
       manager: req.userId
     })
-    if(!outlet){
+    if (!outlet) {
       const error = new Error('Outlet not found!');
       throw error;
     }
-    if(!product){
+    if (!product) {
       const error = new Error('Prodcuct not found!');
       throw error;
     }
@@ -114,7 +133,7 @@ exports.sellProduct = async (req, res, next) => {
       manager: req.userId
     });
 
-    if(!outlet){
+    if (!outlet) {
       const error = new Error('Outlet not found!');
       throw error;
     }
@@ -177,7 +196,7 @@ exports.filterProducts = async (req, res) => {
       res.status(200).json({
         message: 'Outlet Found',
         products: outlet.products.items.filter(product => {
-          return product.name.split('+').join('') === name   //updated
+          return product.name.split('+').join('') === name //updated
         })
       })
     } else {
