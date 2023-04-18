@@ -50,6 +50,7 @@ exports.addOutlet = async (req, res, next) => {
 
 exports.addOutletProducts = async (req, res, next) => {
   try {
+    console.log('REQ user ID: ',req._id)
     const product = await Product.findOne({
       _id: req.params.productId
     })
@@ -57,6 +58,14 @@ exports.addOutletProducts = async (req, res, next) => {
     const outlet = await Outlet.findOne({
       manager: req.userId
     })
+    if(!outlet){
+      const error = new Error('Outlet not found!');
+      throw error;
+    }
+    if(!product){
+      const error = new Error('Prodcuct not found!');
+      throw error;
+    }
 
     if (outlet.products.items.length === 0) {
       outlet.products.items.push({
@@ -104,6 +113,11 @@ exports.sellProduct = async (req, res, next) => {
     const outlet = await Outlet.findOne({
       manager: req.userId
     });
+
+    if(!outlet){
+      const error = new Error('Outlet not found!');
+      throw error;
+    }
 
     const productIndex = outlet.products.items.findIndex((item) => item.productId.toString() === req.params.productId.toString());
 
@@ -163,7 +177,7 @@ exports.filterProducts = async (req, res) => {
       res.status(200).json({
         message: 'Outlet Found',
         products: outlet.products.items.filter(product => {
-          return product.name.split(' ').join('') === name
+          return product.name.split('+').join('') === name   //updated
         })
       })
     } else {

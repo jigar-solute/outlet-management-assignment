@@ -26,6 +26,12 @@ module.exports = (req, res, next) => {
         throw error;
     }
 
+    // console.log(req.user.id)
+
+    // if(decodedToken.){
+
+    // }
+
     req.userId = decodedToken.userId;
     req.userRole = decodedToken.userRole;
     next();

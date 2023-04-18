@@ -37,9 +37,8 @@ exports.getOutlets = async (req, res, next) => {
     if (timing) {
         queryObject.timing = timing;
     }
-
     try {
-        const outlets = await Outlet.find(queryObject);
+        const outlets = await Outlet.find(queryObject, {"name": 1, "state": 1, "city": 1, "_id": 0});
         if (!outlets) {
             res.json({
                 message: 'No Outlet found!'
@@ -48,15 +47,21 @@ exports.getOutlets = async (req, res, next) => {
 
         res.json({
             message: 'Outlets found!',
-            Outlets: outlets.map(p => {
-                return {
-                    name: p.name,
-                    city: p.city,
-                    status: p.status
-                }
-            }),
+            Outlets: outlets,
             products: outlets.products
         })
+
+        // res.json({
+        //     message: 'Outlets found!',
+        //     Outlets: outlets.map(p => {
+        //         return {
+        //             name: p.name,
+        //             city: p.city,
+        //             status: p.status
+        //         }
+        //     }),
+        //     products: outlets.products
+        // })
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -96,6 +101,10 @@ exports.postChangeStatus = async (req, res, next) => {
     const updatedStatus = req.query;
     try {
         const outlet = await Outlet.findById(outletId);
+        if(!outlet){
+            const error = new Error('Outlet not found!');
+            throw error;
+        }
 
         outlet.status = updatedStatus.status;
 
@@ -105,7 +114,7 @@ exports.postChangeStatus = async (req, res, next) => {
             name: outlet.name,
             status: outlet.status
         })
-    } catch (error) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -145,81 +154,155 @@ exports.postAddProduct = async (req, res, next) => {
 }
 
 
+
+
+
+// exports.getCityProduct = async (req, res) => {
+//     const {city, state} = req.query
+//     try{
+//     const result = await Promise.all([
+//         Outlet.aggregate([
+//           {
+//             $match: { city },
+//           },
+//           {
+//             $unwind: '$products.items',
+//           },
+//           {
+//             $group: {
+//               _id: '$products.items.status',
+//               product_count: {
+//                 $sum: 1,
+//               },
+//               total_quantity: {
+//                 $sum: '$products.items.quantity',
+//               },
+//             },
+//           },
+//           {
+//             $sort: {
+//               _id: 1,
+//             },
+//           },
+//         ]),
+//         Outlet.aggregate([
+//           {
+//             $match: { state },
+//           },
+//           {
+//             $unwind: '$products.items',
+//           },
+//           {
+//             $addFields: {
+//               filter: 'city',
+//             },
+//           },
+//           {
+//             $group: {
+//               _id: '$products.items.status',
+//               product_count: {
+//                 $sum: 1,
+//               },
+//               total_quantity: {
+//                 $sum: '$products.items.quantity',
+//               },
+//             },
+//           },
+//           {
+//             $sort: {
+//               _id: 1,
+//             },
+//           },
+//         ]),
+//       ]);
+
+//       console.log(result)
+    
+//         res.json({
+//             result
+//         });
+//     } catch (err) {
+//         if (!err.statusCode) {
+//             err.statusCode = 500;
+//         }
+//         // next(err);
+//         console.log(err)
+//     }
+// };
+
+
+
 exports.getCityProduct = async (req, res) => {
-    const {
-        city
-    } = req.params;
-    try {
-        const results = await Outlet.aggregate([{
-                $match: {
-                    city
-                }
+    const {city, state} = req.query
+    try{
+       
+        const cityResult = await Outlet.aggregate([
+          {
+            $match: { city },
+          },
+          {
+            $unwind: '$products.items',
+          },
+          {
+            $group: {
+              _id: '$products.items.status',
+              product_count: {
+                $sum: 1,
+              },
+              total_quantity: {
+                $sum: '$products.items.quantity',
+              },
             },
-            {
-                $unwind: '$products.items'
-            }, //to split array ($unwind splits array)
-            {
-                $group: {
-                    _id: '$products.items.status',
-                    product_count: {
-                        $sum: 1
-                    },
-                    total_quantity: {
-                        $sum: '$products.items.quantity'
-                    }
-                }
+          },
+          {
+            $sort: {
+              _id: 1,
             },
-            {
-                $sort: {
-                    _id: 1
-                }
-            }
-        ]);
-        res.json(results);
+          },
+        ])
+        const stateResult = await Outlet.aggregate([
+          {
+            $match: { state },
+          },
+          {
+            $unwind: '$products.items',
+          },
+          {
+            $addFields: {
+              filter: 'city',
+            },
+          },
+          {
+            $group: {
+              _id: '$products.items.status',
+              product_count: {
+                $sum: 1,
+              },
+              total_quantity: {
+                $sum: '$products.items.quantity',
+              },
+            },
+          },
+          {
+            $sort: {
+              _id: 1,
+            },
+          },
+        ])     
+
+    
+        res.json({
+            city: city,
+            cityResult,  
+            
+            state: state,       
+            stateResult
+        });
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
-        next(err);
-    }
-};
-
-
-exports.getStateProduct = async (req, res) => {
-    const {
-        state
-    } = req.params;
-    try {
-        const results = await Outlet.aggregate([{
-                $match: {
-                    state
-                }
-            },
-            {
-                $unwind: '$products.items'
-            },
-            {
-                $group: {
-                    _id: '$products.items.status',
-                    product_count: {
-                        $sum: 1
-                    },
-                    total_quantity: {
-                        $sum: '$products.items.quantity'
-                    }
-                }
-            },
-            {
-                $sort: {
-                    _id: 1
-                }
-            } //$sum:1 means -> 1+1+1+..... upto array.length & $sum: x --> x+x+x+x+.....
-        ]);
-        res.json(results);
-    } catch (err) {
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
-        next(err);
+        // next(err);
+        console.log(err)
     }
 };
