@@ -14,6 +14,11 @@ exports.addOutlet = async (req, res, next) => {
       manager: req.userId
     });
 
+    if(!areaManager){
+      const error = new Error(`Area manager of city: ${req.body.city} Not found, Please add new area manager! `);
+      throw error;
+    }
+
     if (existingOutlet) {
       const error = new Error('You can add outlet only once!');
       throw error;
@@ -36,7 +41,10 @@ exports.addOutlet = async (req, res, next) => {
     res.status(200).json(outlet)
 
   } catch (err) {
-    console.log(err)
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 }
 
@@ -50,6 +58,7 @@ exports.addOutletProducts = async (req, res, next) => {
     const outlet = await Outlet.findOne({
       manager: req.userId
     })
+
     if (outlet.products.items.length === 0) {
       outlet.products.items.push({
         productId: product._id,
@@ -60,18 +69,14 @@ exports.addOutletProducts = async (req, res, next) => {
       })
     } else {
 
-      // Find the index of the product, if it already exists in the items array
+      
       const index = outlet.products.items.findIndex(item => item.productId.toString() === product._id.toString());
-
+   
       if (index >= 0) {
-        // If the product exists, update the quantity
         outlet.products.items[index].quantity += +req.query.quantity;
         outlet.products.items[index].status = 'available'
       } else {
 
-
-
-        // If the product does not exist, add it to the items array
         outlet.products.items.push({
           productId: product._id,
           name: product.name,
@@ -86,7 +91,10 @@ exports.addOutletProducts = async (req, res, next) => {
 
     res.status(200).json(outlet)
   } catch (err) {
-    console.log(err)
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 }
 
@@ -122,14 +130,17 @@ exports.sellProduct = async (req, res, next) => {
 
 
     if (product.quantity === 0) {
-      product.status = 'out of stock'
+      product.status = 'out of stock';
     }
 
 
     await outlet.save();
     res.status(200).json(outlet);
   } catch (err) {
-    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 
 }
@@ -168,10 +179,12 @@ exports.filterProducts = async (req, res) => {
           }),
         
       });
-     }
-    
+     }    
 
   } catch (err) {
-    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 }

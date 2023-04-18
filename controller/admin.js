@@ -131,17 +131,16 @@ exports.postAddProduct = async (req, res, next) => {
 }
 
 
-
 exports.getCityProduct = async (req, res) => {
   const { city } = req.params;
   try {
     const results = await Outlet.aggregate([
       { $match: { city } },
-      { $unwind: '$products.items' },
-      { $group: { _id: '$products.items.status', count: { $sum: 1 } } },
+      { $unwind: '$products.items' },    //to split array ($unwind splits array)
+      { $group: { _id: '$products.items.status', product_count: { $sum: 1 }, total_quantity: {$sum: '$products.items.quantity' } } },
       { $sort: { _id: 1 } }
     ]);
-    res.send(results);
+    res.json(results);
   } catch (err) {
     if (!err.statusCode) {
         err.statusCode = 500;
@@ -157,10 +156,10 @@ exports.getStateProduct = async (req, res) => {
       const results = await Outlet.aggregate([
         { $match: { state } },
         { $unwind: '$products.items' },
-        { $group: { _id: '$products.items.status', count: { $sum: 1 } } },
-        { $sort: { _id: 1 } }
+        { $group: { _id: '$products.items.status', product_count: { $sum: 1 }, total_quantity: {$sum: '$products.items.quantity' } } },
+        { $sort: { _id: 1 } }                                     //$sum:1 means -> 1+1+1+..... upto array.length & $sum: x --> x+x+x+x+.....
       ]);
-      res.send(results);
+      res.json(results);
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
