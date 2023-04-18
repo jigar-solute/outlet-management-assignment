@@ -5,7 +5,6 @@ const AreaManager = require('../models/areaManager');
 
 
 exports.addOutlet = async (req, res, next) => {
-
   try {
     const areaManager = await AreaManager.findOne({ //find area manager with same city to push outlet Ids
       city: req.body.city

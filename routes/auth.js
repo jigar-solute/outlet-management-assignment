@@ -40,5 +40,15 @@ router.post('/login',
 ], 
 authController.login);
 
+router.post('/area-manager/login',
+[
+    body("email")
+    .isEmail()
+    .not().isEmpty(), 
+    body("password")
+    .notEmpty()
+], 
+authController.areaManagerLogin);
+
 
 module.exports = router;

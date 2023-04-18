@@ -1,4 +1,3 @@
-const MongoClient = require('mongodb').MongoClient;
 require('dotenv').config(); //to load environment file
 
 const Product = require('../models/product.js');
@@ -28,7 +27,7 @@ exports.getOutlets = async (req, res, next) => {
     }
     
     try{
-        const outlets = await Outlet.find(queryObject);   //replace with outlet model 
+        const outlets = await Outlet.find(queryObject);  
         if(!outlets){
             res.json({ message: 'No Outlet found!'})     
         }

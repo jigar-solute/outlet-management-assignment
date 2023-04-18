@@ -113,6 +113,7 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({
       email: email
     })
+    
     if (!user) {
       const error = new Error('A user with this email could not be found.');
       error.statusCode = 401;
@@ -142,6 +143,52 @@ exports.login = async (req, res, next) => {
       message: 'User Found',
       userId: user._id.toString(),
       userRole: user.userRole
+    });
+
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+
+exports.areaManagerLogin = async (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  try {
+    const areaManager = await AreaManager.findOne({
+      email: email
+    })
+    
+    if (!areaManager) {
+      const error = new Error('A area Manager with this email could not be found.');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const isEqual = await bcrypt.compare(password, areaManager.password);
+
+    if (!isEqual) {
+      const error = new Error('Wrong password!');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const token = jwt.sign({
+        email: areaManager.email,
+        userId: areaManager._id.toString(),
+        userRole: areaManager.userRole
+      },
+      process.env.JWT_SECRET_KEY, {
+        expiresIn: '1h'
+      }
+    );
+
+    res.status(200).json({
+      token: token,
+      message: 'Area manager Found',
+      userId: areaManager._id.toString(),
+      userRole: areaManager.userRole
     });
 
   } catch (err) {
