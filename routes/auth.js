@@ -14,10 +14,41 @@ router.post('/signup',
     body('password')
     .trim()
     .isLength({ min: 5 })
+    .isAlphanumeric()
 ],
  authController.signup);
 
-router.post('/login', authController.login);
+ router.post('/area-manager/signup',
+[
+    body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email.'),
+    body('password')
+    .trim()
+    .isLength({ min: 5 })
+    .isAlphanumeric()
+],
+ authController.areaManagerSignup);
+
+router.post('/login',
+[
+    body("email")
+    .isEmail()
+    .not().isEmpty(), 
+    body("password")
+    .notEmpty()
+], 
+authController.login);
+
+router.post('/area-manager/login',
+[
+    body("email")
+    .isEmail()
+    .not().isEmpty(), 
+    body("password")
+    .notEmpty()
+], 
+authController.areaManagerLogin);
 
 
 module.exports = router;

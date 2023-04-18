@@ -1,3 +1,5 @@
+require('dotenv').config(); //to load environment file
+
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
@@ -12,7 +14,7 @@ module.exports = (req, res, next) => {
     const token = authHeader.split(' ')[1]   //To get 'Bearer Token' and split with whitespace so to get - 'Bearer' + 'token' separately
     let decodedToken;                       //Bearer is not needed, iys just conevntion to write it for token for json data
     try{
-        decodedToken = jwt.verify(token, 'somesupersecretsecret')         //It will decode and verify both
+        decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY)         //It will decode and verify both
     }
     catch (err) {
         err.statusCode = 500;

@@ -1,5 +1,5 @@
+require('dotenv').config(); //to load environment file
 
-const User = require('../models/user.js');
 const Product = require('../models/product.js');
 const Outlet = require('../models/outlet.js');
 
@@ -27,7 +27,7 @@ exports.getOutlets = async (req, res, next) => {
     }
     
     try{
-        const outlets = await Outlet.find(queryObject);   //replace with outlet model 
+        const outlets = await Outlet.find(queryObject);  
         if(!outlets){
             res.json({ message: 'No Outlet found!'})     
         }
@@ -44,7 +44,10 @@ exports.getOutlets = async (req, res, next) => {
             products: outlets.products          
         })
     } catch(err){
-        console.log(err)
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
     }
 }
 
@@ -53,7 +56,7 @@ exports.getOutlet = async (req, res, next) => {
     const outletId = req.params.outletId;
      
     try {
-        const outlet = await Outlet.findById(outletId)  //replace with outlet model 
+        const outlet = await Outlet.findById(outletId)  
        
     if(!outlet){
         const error = new Error('Could not find Outlet');
@@ -66,24 +69,33 @@ exports.getOutlet = async (req, res, next) => {
         user: outlet
     })
     } catch (err) {
-        console.log(err)
-    }
-    
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+    }    
 }
 
 exports.postChangeStatus = async (req, res, next) => {
     const outletId = req.params.outletId;
     const updatedStatus = req.query;
+    try {
+        const outlet = await Outlet.findById(outletId);
 
-    const outlet = await Outlet.findById(outletId)
-    outlet.status = updatedStatus.status;
-
-    await outlet.save();
-    res.json({
-        message: 'Outlet status updated!',
-        name: outlet.name,
-        status: outlet.status
-    })
+        outlet.status = updatedStatus.status;
+    
+        await outlet.save();
+        res.json({
+            message: 'Outlet status updated!',
+            name: outlet.name,
+            status: outlet.status
+        })
+    } catch (error) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+    }
 }
 
 
@@ -110,23 +122,48 @@ exports.postAddProduct = async (req, res, next) => {
         product: product
     });
     } catch (err) {
-        console.log(err)
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
     }
 }
 
 
-// exports.getProduct = async (req, res, next) => {
-//     try{
-//     const productId = req.params.productId;
-//     const outlet = await Outlet.find()
-//     const product = await Product.findOne({
-//         _id: productId
-//     })
-//     const index = outlet.map(p => {
-//         return p.products.items.findIndex(item => item.productId.toString() === product._id.toString());
-//     })
-//     console.log(index)
-// } catch(err){
-//     console.log(err)
-// }
-// }
+exports.getCityProduct = async (req, res) => {
+  const { city } = req.params;
+  try {
+    const results = await Outlet.aggregate([
+      { $match: { city } },
+      { $unwind: '$products.items' },    //to split array ($unwind splits array)
+      { $group: { _id: '$products.items.status', product_count: { $sum: 1 }, total_quantity: {$sum: '$products.items.quantity' } } },
+      { $sort: { _id: 1 } }
+    ]);
+    res.json(results);
+  } catch (err) {
+    if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+  }
+};
+
+
+exports.getStateProduct = async (req, res) => {
+    const { state } = req.params;
+    try {
+      const results = await Outlet.aggregate([
+        { $match: { state } },
+        { $unwind: '$products.items' },
+        { $group: { _id: '$products.items.status', product_count: { $sum: 1 }, total_quantity: {$sum: '$products.items.quantity' } } },
+        { $sort: { _id: 1 } }                                     //$sum:1 means -> 1+1+1+..... upto array.length & $sum: x --> x+x+x+x+.....
+      ]);
+      res.json(results);
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+    }
+  };
+  
