@@ -21,7 +21,7 @@ router.get('/products/status/city/:city', isAuth, adminAuth, adminController.get
 router.get('/products/status/state/:state', isAuth, adminAuth, adminController.getStateProduct);
 
 
-  
+
 
 
 module.exports = router;

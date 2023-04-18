@@ -1,11 +1,9 @@
-
 module.exports = (req, res, next) => {
-    
-    if(req.userRole === 'outlet-manager'){
+
+    if (req.userRole === 'outlet-manager') {
         next();
-    }
-    else{
+    } else {
         const error = new Error('Not Authorized, only outlet manager could access this route!');
         throw error;
-    }   
+    }
 }

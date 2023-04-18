@@ -40,19 +40,19 @@ const outletSchema = new Schema({
       },
       name: {
         type: String,
-        default:""
+        default: ""
       },
       imageUrl: {
         type: String,
-        default:""
+        default: ""
       },
-      price:{
+      price: {
         type: Number,
-        default:0
+        default: 0
       },
       category: {
         type: String,
-        default:""
+        default: ""
       },
       status: {
         type: String,
@@ -66,11 +66,11 @@ const outletSchema = new Schema({
     ref: "User",
     required: true,
   },
-    areaManager: {
-      type: Schema.Types.ObjectId,
-      ref: 'AreaManager',
-      required: true
-    }
+  areaManager: {
+    type: Schema.Types.ObjectId,
+    ref: 'AreaManager',
+    required: true
+  }
 });
 module.exports = mongoose.model('Outlatestoremodel', outletSchema);
 

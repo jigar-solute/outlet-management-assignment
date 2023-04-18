@@ -13,7 +13,7 @@ exports.addOutlet = async (req, res, next) => {
       manager: req.userId
     });
 
-    if(!areaManager){
+    if (!areaManager) {
       const error = new Error(`Area manager of city: ${req.body.city} Not found, Please add new area manager! `);
       throw error;
     }
@@ -68,9 +68,9 @@ exports.addOutletProducts = async (req, res, next) => {
       })
     } else {
 
-      
+
       const index = outlet.products.items.findIndex(item => item.productId.toString() === product._id.toString());
-   
+
       if (index >= 0) {
         outlet.products.items[index].quantity += +req.query.quantity;
         outlet.products.items[index].status = 'available'
@@ -156,29 +156,28 @@ exports.filterProducts = async (req, res) => {
 
   try {
     const outlet = await Outlet.findOne({
-        manager: req.userId
-      })
-   
-     if(name){
+      manager: req.userId
+    })
+
+    if (name) {
       res.status(200).json({
         message: 'Outlet Found',
         products: outlet.products.items.filter(product => {
           return product.name.split(' ').join('') === name
-        }) 
+        })
       })
-     }
-     else{
+    } else {
       res.status(200).json({
         message: 'Outlets found',
         products: outlet.products.items.filter(product => {
-          if(Object.keys(req.query).length === 0){  //req.query = {}
+          if (Object.keys(req.query).length === 0) { //req.query = {}
             return product;
-        }
-            return ((product.price <= maxPrice && product.price >= minPrice) || (product.quantity <= maxQuantity && product.quantity >= minQuantity) )
-          }),
-        
+          }
+          return ((product.price <= maxPrice && product.price >= minPrice) || (product.quantity <= maxQuantity && product.quantity >= minQuantity))
+        }),
+
       });
-     }    
+    }
 
   } catch (err) {
     if (!err.statusCode) {
