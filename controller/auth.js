@@ -139,10 +139,9 @@ exports.login = async (req, res, next) => {
     const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
       expiresIn: '1d',
     });
-   if(!user.refreshTokens.includes(refreshToken)){
-    user.refreshTokens.push(refreshToken);
+    
+       user.refreshTokens.push(refreshToken);
     await user.save();
-   }
    
 
     res.status(200).json({
