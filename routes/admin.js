@@ -2,14 +2,13 @@ const express = require('express');
 
 const isAuth = require('../middleware/isAuth.js');
 const adminAuth = require('../middleware/adminAuth.js');
-const refreshToken = require('../middleware/refreshAuth.js');
 
 const adminController = require('../controller/admin.js');
 
 const router = express.Router();
 
 
-router.get('/outlets', adminAuth, adminController.getOutlets);
+router.get('/outlets', isAuth, adminAuth, adminController.getOutlets);
 
 router.get('/outlet/:outletId', isAuth, adminAuth, adminController.getOutlet);
 

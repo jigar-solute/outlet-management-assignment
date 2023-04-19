@@ -8,6 +8,11 @@ const User = require('../models/user.js');
 const AreaManager = require('../models/areaManager.js')
 
 
+const accessTokenSecret = 'somesupersecretsecret';
+const refreshTokenSecret = 'somesupersecretsecret';
+const refreshTokens = [];
+
+
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -124,18 +129,23 @@ exports.login = async (req, res, next) => {
       throw error;
     }
 
-    const token = jwt.sign({
-        email: user.email,
+    const accessToken = jwt.sign({ 
+      email: user.email,
         userId: user._id.toString(),
         userRole: user.userRole
-      },
-      process.env.JWT_SECRET_KEY, {
-        expiresIn: '1h'
-      }
-    );
+     }, accessTokenSecret, {
+      expiresIn: '15s',
+    });
+    const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
+      expiresIn: '1d',
+    });
+
+    user.refreshTokens.push(refreshToken);
+    await user.save();
 
     res.status(200).json({
-      token: token,
+      accesstoken: accessToken,
+      refreshToken: refreshToken,
       message: 'User Found',
       userId: user._id.toString(),
       userRole: user.userRole
@@ -145,6 +155,42 @@ exports.login = async (req, res, next) => {
     console.log(err)
   }
 }
+
+
+
+exports.refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token not found' });
+  }
+
+
+  try {
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+
+    const accessToken = jwt.sign({ 
+      email: user.email,
+      userId: user._id.toString(),
+      userRole: user.userRole
+     }, accessTokenSecret, {
+      expiresIn: '30s',
+    });
+
+    res.status(200).json({
+      accessToken,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 
 exports.areaManagerLogin = async (req, res, next) => {
@@ -191,3 +237,26 @@ exports.areaManagerLogin = async (req, res, next) => {
     console.log(err)
   }
 }
+
+
+exports.logout = async (req, res, next) => {
+  const refreshToken = req.body.refreshToken;
+  
+  try {
+    const user = await User.findOne({ refreshTokens: refreshToken });
+    if (!user) {
+      const error = new Error('User not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Remove the provided refresh token from the user's refreshTokens array
+    user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken);
+    await user.save();
+
+    res.status(200).json({ message: 'User logged out successfully' });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
