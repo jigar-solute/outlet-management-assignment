@@ -11,7 +11,8 @@ exports.getOutlets = async (req, res, next) => {
         city,
         state,
         status,
-        timings
+        open,
+        close
     } = req.query;
     const queryObject = {};
 
@@ -21,7 +22,7 @@ exports.getOutlets = async (req, res, next) => {
             $options: 'i'
         };
         //so that all names eg if query is name=iphone it will return all like iphone,iphone 10 
-    } //and all and also case insensitive (either small or capital both)
+    } 
     if (city) { //so that if any wrong query is written, then we don't show empty array, but data based on its 
         queryObject.city = {
             $regex: city,
@@ -34,8 +35,11 @@ exports.getOutlets = async (req, res, next) => {
     if (status) {
         queryObject.status = status;
     }
-    if (timings) {
-        queryObject.timings = timings;
+    if (open) {
+        queryObject['timings.open'] = {$gte: open};
+    }
+    if (close) {
+        queryObject['timings.close'] = {$lte: close};
     }
     try {
         const outlets = await Outlet.find(queryObject, {"name": 1, "state": 1, "city": 1, "_id": 0});

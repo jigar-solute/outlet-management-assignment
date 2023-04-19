@@ -12,7 +12,11 @@ exports.addOutlet = async (req, res, next) => {
     area,
     status,
     timings
-  } = req.body;
+  } = req.b
+  
+  timings.open = Math.floor(timings.open);    //to convert decimal to integer
+  timings.close = Math.floor(timings.close);
+
 
   try {
     const areaManager = await AreaManager.findOne({ //find area manager with same city to push outlet Ids
@@ -32,10 +36,15 @@ exports.addOutlet = async (req, res, next) => {
       throw error;
     }
 
-    if(timings.close<timings.open)
+    if(timings.close < timings.open)
     {
-      const error = new Error('Timings must be in 24 hour format');
+      const error = new Error('Close time should be greater than open time or Timings must be in 24 hour format');
       throw error
+    }
+
+    if(timings.close === 0 || timings.open === 0){
+        const error = new Error('Please enter a valid time (only in integer and greater than 0)')
+        throw error;
     }
 
 
