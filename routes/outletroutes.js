@@ -1,9 +1,9 @@
-const express = require("express")
+const express = require("express");
 const router = express.Router();
 
 const outletController = require("../controller/outletController.js");
 const isAuth = require("../middleware/isAuth.js");
-const outletManagerAuth = require('../middleware/outletManagerAuth.js')
+const outletManagerAuth = require('../middleware/outletManagerAuth.js');
 
 
 router.post('/add-outlet', isAuth, outletManagerAuth, outletController.addOutlet);

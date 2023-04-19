@@ -5,9 +5,20 @@ const AreaManager = require('../models/areaManager');
 
 
 exports.addOutlet = async (req, res, next) => {
-  const {name,city,state,area,status,timings} = req.body;
-  try {
+  const {
+    name,
+    city,
+    state,
+    area,
+    status,
+    timings
+  } = req.b
+  
+  timings.open = Math.floor(timings.open);    //to convert decimal to integer
+  timings.close = Math.floor(timings.close);
 
+
+  try {
     const areaManager = await AreaManager.findOne({ //find area manager with same city to push outlet Ids
       city: req.body.city
     })
@@ -15,7 +26,7 @@ exports.addOutlet = async (req, res, next) => {
       manager: req.userId
     });
 
-    if(!areaManager){
+    if (!areaManager) {
       const error = new Error(`Area manager of city: ${req.body.city} Not found, Please add new area manager! `);
       throw error;
     }
@@ -24,29 +35,29 @@ exports.addOutlet = async (req, res, next) => {
       const error = new Error('You can add outlet only once!');
       throw error;
     }
-    
-    // let endtime=new Date(endTime);
-    // console.log(endtime);
 
+    if(timings.close < timings.open)
+    {
+      const error = new Error('Close time should be greater than open time or Timings must be in 24 hour format');
+      throw error
+    }
 
-// const itemStartTime = new Date(`2023-04-18T${req.startTime}:00`).getTime()
+    if(timings.close === 0 || timings.open === 0){
+        const error = new Error('Please enter a valid time (only in integer and greater than 0)')
+        throw error;
+    }
 
-        if(timings.close<timings.open)
-        {
-          const error = new Error('Timings must be in 24 hour format');
-          throw error
-        }
 
     const outlet = new Outlet({
       name: name,
       city: city,
       state: state,
       area: area,
-      status:status,
-       timings:{
-       open:timings.open,
-       close:timings.close
-       },
+      status: status,
+      timings: {
+        open: timings.open,
+        close: timings.close
+      },
       manager: req.userId,
       areaManager: areaManager._id
     })
@@ -67,6 +78,7 @@ exports.addOutlet = async (req, res, next) => {
 
 exports.addOutletProducts = async (req, res, next) => {
   try {
+    console.log('REQ user ID: ', req._id)
     const product = await Product.findOne({
       _id: req.params.productId
     })
@@ -74,6 +86,14 @@ exports.addOutletProducts = async (req, res, next) => {
     const outlet = await Outlet.findOne({
       manager: req.userId
     })
+    if (!outlet) {
+      const error = new Error('Outlet not found!');
+      throw error;
+    }
+    if (!product) {
+      const error = new Error('Prodcuct not found!');
+      throw error;
+    }
 
     if (outlet.products.items.length === 0) {
       outlet.products.items.push({
@@ -85,9 +105,9 @@ exports.addOutletProducts = async (req, res, next) => {
       })
     } else {
 
-      
+
       const index = outlet.products.items.findIndex(item => item.productId.toString() === product._id.toString());
-   
+
       if (index >= 0) {
         outlet.products.items[index].quantity += +req.query.quantity;
         outlet.products.items[index].status = 'available'
@@ -116,12 +136,17 @@ exports.addOutletProducts = async (req, res, next) => {
 
 
 exports.sellProduct = async (req, res, next) => {
-  
+
   try {
     const outlet = await Outlet.findOne({
       manager: req.userId
     });
-   
+
+    if (!outlet) {
+      const error = new Error('Outlet not found!');
+      throw error;
+    }
+
     const productIndex = outlet.products.items.findIndex((item) => item.productId.toString() === req.params.productId.toString());
 
     if (productIndex === -1) {
@@ -143,7 +168,7 @@ exports.sellProduct = async (req, res, next) => {
 
 
     product.quantity -= +req.query.quantity;
-    
+
 
     if (product.quantity === 0) {
       product.status = 'out of stock';
@@ -162,52 +187,39 @@ exports.sellProduct = async (req, res, next) => {
 }
 
 
-exports.filterProducts = async (req, res,next) => {
+exports.filterProducts = async (req, res) => {
   const {
     name,
     minPrice,
     maxPrice,
     minQuantity,
-    maxQuantity,
-    outletIds
+    maxQuantity
   } = req.query;
 
   try {
     const outlet = await Outlet.findOne({
-        manager: req.userId
-      })
-   
-     if(name){
+      manager: req.userId
+    })
+
+    if (name) {
       res.status(200).json({
         message: 'Outlet Found',
         products: outlet.products.items.filter(product => {
-          return product.name.split(' ').join('') === name
-        }) 
+          return product.name.split('+').join('') === name //updated
+        })
       })
-     }
-     else if(outletIds)
-     {
-      let outletmodel=await Outlet.findOne({_id:outletIds})
-      res.status(200).json({
-        message: 'Outlet Found',
-        products: outletmodel.products.items.map(product => {
-          return ({name: product.name, quantity: product.quantity, price: product.price, imageUrl: product.imageUrl, category: product.category})
-        }) 
-      })
-     
-    }
-     else{
+    } else {
       res.status(200).json({
         message: 'Outlets found',
         products: outlet.products.items.filter(product => {
-          if(Object.keys(req.query).length === 0){  //req.query = {}
+          if (Object.keys(req.query).length === 0) { //req.query = {}
             return product;
-        }
-            return ((product.price <= maxPrice && product.price >= minPrice) || (product.quantity <= maxQuantity && product.quantity >= minQuantity) )
-          }),
-        
+          }
+          return ((product.price <= maxPrice && product.price >= minPrice) || (product.quantity <= maxQuantity && product.quantity >= minQuantity))
+        }),
+
       });
-     }    
+    }
 
   } catch (err) {
     if (!err.statusCode) {

@@ -47,9 +47,7 @@ exports.signup = async (req, res, next) => {
       throw error;
     }
 
-
-      await user.save();
-
+    await user.save();
 
     res.status(201).json({
       message: 'User Created Successfully..!!'
@@ -71,38 +69,36 @@ exports.areaManagerSignup = async (req, res, next) => {
   const password = req.body.password;
   const userRole = req.body.userRole;
   const city = req.body.city;
-  try{
-  const existingAreaManager = await AreaManager.findOne({
-    email: email
-  });
+  try {
+    const existingAreaManager = await AreaManager.findOne({
+      email: email
+    });
 
-  if (existingAreaManager) {
-    const error = new Error('Area Manager with this email already exists!');
-    throw error;
+    if (existingAreaManager) {
+      const error = new Error('Area Manager with this email already exists!');
+      throw error;
+    }
+
+
+    const hashedPwd = await bcrypt.hash(password, 12);
+
+    const areaManager = new AreaManager({
+      email: email,
+      password: hashedPwd,
+      userRole: userRole,
+      city: city
+    });
+
+    await areaManager.save();
+
+    res.status(201).json({
+      message: 'User Created Successfully..!!'
+    });
+
+  } catch (err) {
+    console.log(err)
   }
-
-  
-  const hashedPwd = await bcrypt.hash(password, 12);
-
-  const areaManager = new AreaManager({
-    email: email,
-    password: hashedPwd,
-    userRole: userRole,
-    city: city
-  });
-
-  await areaManager.save();
-
-  res.status(201).json({
-    message: 'User Created Successfully..!!'
-  });
-
-} catch (err) {
-  console.log(err)
 }
-}
-
-
 
 
 exports.login = async (req, res, next) => {
@@ -113,7 +109,7 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({
       email: email
     })
-    
+
     if (!user) {
       const error = new Error('A user with this email could not be found.');
       error.statusCode = 401;
@@ -137,7 +133,6 @@ exports.login = async (req, res, next) => {
         expiresIn: '1h'
       }
     );
- 
 
     res.status(200).json({
       token: token,
@@ -160,7 +155,7 @@ exports.areaManagerLogin = async (req, res, next) => {
     const areaManager = await AreaManager.findOne({
       email: email
     })
-    
+
     if (!areaManager) {
       const error = new Error('A area Manager with this email could not be found.');
       error.statusCode = 401;
