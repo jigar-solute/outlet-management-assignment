@@ -6,7 +6,8 @@ const Outlet = require('../models/outlet.js');
 
 
 exports.getOutlets = async (req, res, next) => {
-    const {
+   
+  const {
         name,
         city,
         state,
@@ -148,7 +149,7 @@ exports.postAddProduct = async (req, res, next) => {
 
 
 
-exports.getCityProduct = async (req, res) => {
+exports.getCityStateProduct = async (req, res) => {
     const {city, state} = req.query
     try{
        

@@ -21,11 +21,11 @@ app.use((req, res, next) => { //CORS error setting
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
+app.use('/auth', authRoutes);
 
 app.use(homePageRoutes);
 app.use('/outlet', outletRoutes);
 app.use('/admin', adminRoutes);
-app.use('/auth', authRoutes);
 
 
 app.use((error, req, res, next) => {

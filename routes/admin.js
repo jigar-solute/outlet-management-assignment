@@ -16,7 +16,7 @@ router.patch('/outlets/:outletId', isAuth, adminAuth, adminController.postChange
 
 router.post('/add-product', isAuth, adminAuth, adminController.postAddProduct);
 
-router.get('/products/aggregate-status', isAuth, adminAuth, adminController.getCityProduct);
+router.get('/products/aggregate-status', isAuth, adminAuth, adminController.getCityStateProduct);
 
 
 

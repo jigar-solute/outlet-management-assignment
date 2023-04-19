@@ -1,8 +1,10 @@
 require('dotenv').config(); //to load environment file
 
 const jwt = require('jsonwebtoken');
+const mac = require('address')
 
 module.exports = (req, res, next) => {
+
     const authHeader = req.get('Authorization');
 
     if (!authHeader) {
@@ -26,8 +28,15 @@ module.exports = (req, res, next) => {
         throw error;
     }
 
-    // console.log(req.user.id)
+    // const macd =  mac.mac((err, mac) => {
+    //     return mac
+    //   })
 
+
+   if(mac.ip() !== decodedToken.mac){
+    const error = new Error('Not same device');
+    throw error;
+   }
     // if(decodedToken.){
 
     // }

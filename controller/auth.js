@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const {
   validationResult
 } = require('express-validator');
+const mac = require('address')
 
 const User = require('../models/user.js');
 const AreaManager = require('../models/areaManager.js')
@@ -129,19 +130,25 @@ exports.login = async (req, res, next) => {
       throw error;
     }
 
+    // const macd = await mac.mac((err, mac) => {
+    //   return mac
+    // })
+
     const accessToken = jwt.sign({ 
       email: user.email,
         userId: user._id.toString(),
-        userRole: user.userRole
+        userRole: user.userRole,
+        mac: mac.ip()
      }, accessTokenSecret, {
-      expiresIn: '15s',
+      expiresIn: '1h',
     });
     const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
       expiresIn: '1d',
     });
-    
-       user.refreshTokens.push(refreshToken);
-    await user.save();
+    res.setHeader('user-email', user.email)
+  
+      //  user.refreshTokens.push(refreshToken);
+      //  await user.save();
    
 
     res.status(200).json({
