@@ -9,7 +9,7 @@ const adminController = require('../controller/admin.js');
 const router = express.Router();
 
 
-router.get('/outlets', refreshToken, adminAuth, adminController.getOutlets);
+router.get('/outlets', adminAuth, adminController.getOutlets);
 
 router.get('/outlet/:outletId', isAuth, adminAuth, adminController.getOutlet);
 
