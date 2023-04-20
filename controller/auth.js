@@ -137,8 +137,7 @@ exports.login = async (req, res, next) => {
     const accessToken = jwt.sign({ 
       email: user.email,
         userId: user._id.toString(),
-        userRole: user.userRole,
-        mac: mac.ip()
+        userRole: user.userRole
      }, accessTokenSecret, {
       expiresIn: '1h',
     });
