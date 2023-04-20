@@ -37,9 +37,6 @@ module.exports = (req, res, next) => {
     const error = new Error('Not same device');
     throw error;
    }
-    // if(decodedToken.){
-
-    // }
 
     req.userId = decodedToken.userId;
     req.userRole = decodedToken.userRole;

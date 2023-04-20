@@ -56,10 +56,6 @@ router.post('/area-manager/login',
     ],
     authController.areaManagerLogin);
 
-router.post('/refresh-token', authController.refreshToken)
-
-router.post('/logout', authController.logout);
-
 
 
 module.exports = router;

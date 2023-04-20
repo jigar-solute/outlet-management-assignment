@@ -4,16 +4,16 @@ const router = express.Router();
 const outletController = require("../controller/outletController.js");
 const isAuth = require("../middleware/isAuth.js");
 const outletManagerAuth = require('../middleware/outletManagerAuth.js');
-const tempAuth = require('../middleware/tempAuth.js')
+const isAuthCookie = require('../middleware/isAuthCookie.js')
 
 
-router.post('/add-outlet', tempAuth, outletManagerAuth, outletController.addOutlet);
+router.post('/add-outlet', isAuthCookie, outletManagerAuth, outletController.addOutlet);
 
-router.post('/add-outlet-products/:productId', tempAuth, outletManagerAuth, outletController.addOutletProducts);
+router.post('/add-outlet-products/:productId', isAuthCookie, outletManagerAuth, outletController.addOutletProducts);
 
-router.post('/sell-product/:productId', tempAuth, outletManagerAuth, outletController.sellProduct);
+router.post('/sell-product/:productId', isAuthCookie, outletManagerAuth, outletController.sellProduct);
 
-router.get('/filter', tempAuth, outletManagerAuth, outletController.filterProducts);
+router.get('/filter', isAuthCookie, outletManagerAuth, outletController.filterProducts);
 
 
 module.exports = router;

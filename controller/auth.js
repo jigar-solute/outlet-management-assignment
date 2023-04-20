@@ -1,17 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const {
-  validationResult
-} = require('express-validator');
-const mac = require('address')
+const { validationResult } = require('express-validator');
 
 const User = require('../models/user.js');
 const AreaManager = require('../models/areaManager.js')
-
-
-const accessTokenSecret = 'somesupersecretsecret';
-const refreshTokenSecret = 'somesupersecretsecret';
-const refreshTokens = [];
 
 
 exports.signup = async (req, res, next) => {
@@ -85,7 +77,6 @@ exports.areaManagerSignup = async (req, res, next) => {
       throw error;
     }
 
-
     const hashedPwd = await bcrypt.hash(password, 12);
 
     const areaManager = new AreaManager({
@@ -138,30 +129,18 @@ exports.login = async (req, res, next) => {
       email: user.email,
         userId: user._id.toString(),
         userRole: user.userRole
-     }, accessTokenSecret, {
+     }, process.env.JWT_SECRET_KEY, {
       expiresIn: '1h',
     });
 
-
     res.cookie("jwtoken", accessToken, {
-      expires: new Date(Date.now() + 600000),
+      expires: new Date(Date.now() + 3600000),   //expires after 1hr
       httpOnly: true
     });
-
-
-    const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
-      expiresIn: '1d',
-    });
-    // res.setHeader('user-email', user.email)
-  
-      //  user.refreshTokens.push(refreshToken);
-      //  await user.save();
    
-
     res.status(200).json({
+      message:  `${user.userRole} Found`,
       accesstoken: accessToken,
-      refreshToken: refreshToken,
-      message: 'User Found',
       userId: user._id.toString(),
       userRole: user.userRole
     });
@@ -170,41 +149,6 @@ exports.login = async (req, res, next) => {
     console.log(err)
   }
 }
-
-
-
-exports.refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(401).json({ message: 'Refresh token not found' });
-  }
-
-
-  try {
-    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
-
-    const user = await User.findOne({ email: decoded.email });
-
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid refresh token' });
-    }
-
-    const accessToken = jwt.sign({ 
-      email: user.email,
-      userId: user._id.toString(),
-      userRole: user.userRole
-     }, accessTokenSecret, {
-      expiresIn: '30s',
-    });
-
-    res.status(200).json({
-      accessToken,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 
 
@@ -231,7 +175,7 @@ exports.areaManagerLogin = async (req, res, next) => {
       throw error;
     }
 
-    const token = jwt.sign({
+    const accessToken = jwt.sign({
         email: areaManager.email,
         userId: areaManager._id.toString(),
         userRole: areaManager.userRole
@@ -241,8 +185,14 @@ exports.areaManagerLogin = async (req, res, next) => {
       }
     );
 
+    res.cookie("jwtoken", accessToken, {
+      expires: new Date(Date.now() + 3600000),   //expires after 1hr
+      httpOnly: true
+    });
+   
+
     res.status(200).json({
-      token: token,
+      accessToken: accessToken,
       message: 'Area manager Found',
       userId: areaManager._id.toString(),
       userRole: areaManager.userRole
@@ -252,26 +202,3 @@ exports.areaManagerLogin = async (req, res, next) => {
     console.log(err)
   }
 }
-
-
-exports.logout = async (req, res, next) => {
-  const refreshToken = req.body.refreshToken;
-  
-  try {
-    const user = await User.findOne({ refreshTokens: refreshToken });
-    if (!user) {
-      const error = new Error('User not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    // Remove the provided refresh token from the user's refreshTokens array
-    user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken);
-    await user.save();
-
-    res.status(200).json({ message: 'User logged out successfully' });
-  } catch (err) {
-    console.log(err);
-    next(err);
-  }
-};
