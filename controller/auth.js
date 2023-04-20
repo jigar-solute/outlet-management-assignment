@@ -142,10 +142,18 @@ exports.login = async (req, res, next) => {
      }, accessTokenSecret, {
       expiresIn: '1h',
     });
+
+
+    res.cookie("jwtoken", accessToken, {
+      expires: new Date(Date.now() + 600000),
+      httpOnly: true
+    });
+
+
     const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
       expiresIn: '1d',
     });
-    res.setHeader('user-email', user.email)
+    // res.setHeader('user-email', user.email)
   
       //  user.refreshTokens.push(refreshToken);
       //  await user.save();

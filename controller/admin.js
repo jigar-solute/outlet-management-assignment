@@ -237,7 +237,7 @@ exports.getCityStateProduct = async (req, res) => {
               }    
               if(stateResult.length === 0 && cityResult.length !== 0){
                 res.json({                
-                    state: city,       
+                    city: city,       
                     cityResult
                 });
               }

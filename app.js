@@ -1,4 +1,5 @@
 require('dotenv').config(); //to load environment file
+const cookieParser = require('cookie-parser');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -11,6 +12,7 @@ const authRoutes = require('./routes/auth.js');
 
 const app = express();
 
+app.use(cookieParser());
 
 app.use(bodyParser.json()); // application/json           //to parse json data from incoming requests
 

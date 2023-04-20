@@ -12,7 +12,7 @@ exports.addOutlet = async (req, res, next) => {
     area,
     status,
     timings
-  } = req.b
+  } = req.body
   
   timings.open = Math.floor(timings.open);    //to convert decimal to integer
   timings.close = Math.floor(timings.close);
